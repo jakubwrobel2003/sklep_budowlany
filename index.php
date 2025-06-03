@@ -14,7 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['produkt_id'])) {
     exit;
 }
 
-$sql = "SELECT * FROM Produkty";
+$sql = "SELECT p.*, k.Nazwa AS Kategoria 
+        FROM produkty p 
+        LEFT JOIN kategorie k ON p.Kategoria_ID = k.Kategoria_ID";
 $result = $conn->query($sql);
 ?>
 
@@ -31,6 +33,16 @@ $result = $conn->query($sql);
         <nav>
             <a href="#">Produkty</a>
             <a href="#">Kontakt</a>
+            <?php if (isset($_SESSION['user'])): ?>
+    <span>👤 Zalogowany jako: 
+        <a href="profil.php">
+            <strong><?= htmlspecialchars($_SESSION['user']['Login']) ?></strong>
+        </a>
+    </span> |
+    <a href="logout.php">🚪 Wyloguj</a>
+<?php else: ?>
+    <a href="login.php">🔐 Zaloguj</a>
+<?php endif; ?>
             <a href="koszyk.php">🛒 Koszyk (<?= array_sum($_SESSION['koszyk'] ?? []) ?>)</a>
         </nav>
     </header>
@@ -43,6 +55,7 @@ $result = $conn->query($sql);
                     <img src="https://via.placeholder.com/200x250.png?text=Produkt" alt="<?= htmlspecialchars($row['Nazwa']) ?>">
                     <h2><?= htmlspecialchars($row['Nazwa']) ?></h2>
                     <p><strong>Firma:</strong> <?= htmlspecialchars($row['Producent']) ?></p>
+                    <p><strong>Kategoria:</strong> <?= htmlspecialchars($row['Kategoria'] ?? 'Brak kategorii') ?></p>
                     <p><?= htmlspecialchars($row['Opis']) ?></p>
                     <p class="cena"><?= number_format($row['Cena'], 2) ?> zł</p>
                     <form method="post">
