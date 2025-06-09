@@ -34,7 +34,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html lang="pl">
-<head><meta charset="UTF-8"><title>Rejestracja</title></head>
+<head><meta charset="UTF-8"><title>Rejestracja</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
     <h2>Rejestracja klienta</h2>
     <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>

@@ -37,23 +37,25 @@ $result = $conn->query($sql);
 
     <main>
         <h1>Nasze produkty</h1>
-        <div class="produkty">
-            <?php while ($row = $result->fetch_assoc()): ?>
+       <div class="produkty">
+    
+        <?php while ($row = $result->fetch_assoc()): ?>
                 <div class="produkt">
-                    <img src="https://via.placeholder.com/200x250.png?text=Produkt" alt="<?= htmlspecialchars($row['Nazwa']) ?>">
                     <h2><?= htmlspecialchars($row['Nazwa']) ?></h2>
                     <p><strong>Firma:</strong> <?= htmlspecialchars($row['Producent']) ?></p>
                     <p><strong>Kategoria:</strong> <?= htmlspecialchars($row['Kategoria'] ?? 'Brak kategorii') ?></p>
                     <p><?= htmlspecialchars($row['Opis']) ?></p>
                     <p class="cena"><?= number_format($row['Cena'], 2) ?> zł</p>
-                    <form method="post">
-                        <input type="hidden" name="produkt_id" value="<?= $row['Produkt_ID'] ?>">
-                        <button type="submit">Dodaj do koszyka</button>
-                    </form>
-                    <form action="produkt.php" method="get" style="margin-top: 10px;">
-                        <input type="hidden" name="id" value="<?= $row['Produkt_ID'] ?>">
-                        <button type="submit">Zobacz produkt</button>
-                    </form>
+                    <div class="produkt-buttons">
+                        <form method="post">
+                            <input type="hidden" name="produkt_id" value="<?= $row['Produkt_ID'] ?>">
+                            <button type="submit">Dodaj do koszyka</button>
+                        </form>
+                        <form action="produkt.php" method="get">
+                            <input type="hidden" name="id" value="<?= $row['Produkt_ID'] ?>">
+                            <button type="submit">Zobacz produkt</button>
+                        </form>
+                    </div>
                 </div>
             <?php endwhile; ?>
         </div>

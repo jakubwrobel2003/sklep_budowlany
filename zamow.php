@@ -62,15 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+        <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
     <title>Podaj adres dostawy</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        form { max-width: 400px; }
-        label { display: block; margin-top: 10px; }
-        input { width: 100%; padding: 8px; margin-top: 4px; }
-        button { margin-top: 20px; padding: 10px 15px; }
-    </style>
+   
 </head>
 <body>
 <?php include 'header.php'; ?>
@@ -90,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </label>
     <button type="submit">Zamów 🛒</button>
 </form>
+<?php include 'footer.php'; ?>
 
 </body>
 </html>

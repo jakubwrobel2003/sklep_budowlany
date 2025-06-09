@@ -40,12 +40,7 @@ $produkty = $stmt2->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Faktura #<?= $faktura_id ?></title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        h2, h3 { margin-top: 20px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { padding: 8px; border: 1px solid #ccc; text-align: left; }
-    </style>
+        <link rel="stylesheet" href="style.css">
 </head>
 <body>
 

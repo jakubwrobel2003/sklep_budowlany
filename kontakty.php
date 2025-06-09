@@ -4,20 +4,7 @@
     <meta charset="UTF-8">
     <title>Kontakt – Sklep Budowlany</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .kontakt-container {
-            max-width: 600px;
-            margin: 50px auto;
-        }
-        form input, form textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        form button {
-            padding: 10px 20px;
-        }
-    </style>
+  
 </head>
 <body>
 <?php include 'header.php'; ?>

@@ -34,9 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Logowanie</title>
+        <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>🔐 Logowanie</h1>
+   <header> <h1>🔐 Logowanie</h1></header>
+   <main>
     <?php if ($blad): ?>
         <p style="color:red"><?= htmlspecialchars($blad) ?></p>
     <?php endif; ?>
@@ -47,6 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
     <p><a href="rejestracja.php">Nie masz konta? Zarejestruj się</a></p>
     <?php include 'footer.php'; ?>
-
+    </main>
 </body>
 </html>
