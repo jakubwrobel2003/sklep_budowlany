@@ -4,15 +4,19 @@ require_once 'db.php';
 
 // Obsługa dodania do koszyka
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['produkt_id'])) {
-    $id = $_POST['produkt_id'];
+    $id = (int)$_POST['produkt_id'];
+    $ilosc = isset($_POST['ilosc']) ? max(1, (int)$_POST['ilosc']) : 1;
+
     if (!isset($_SESSION['koszyk'][$id])) {
-        $_SESSION['koszyk'][$id] = 1;
+        $_SESSION['koszyk'][$id] = $ilosc;
     } else {
-        $_SESSION['koszyk'][$id]++;
+        $_SESSION['koszyk'][$id] += $ilosc;
     }
+
     header("Location: index.php");
     exit;
 }
+
 
 $sql = "SELECT p.*, k.Nazwa AS Kategoria 
         FROM produkty p 
@@ -28,24 +32,8 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">🏠 Sklep Budowlany</div>
-        <nav>
-            <a href="#">Produkty</a>
-            <a href="#">Kontakt</a>
-            <?php if (isset($_SESSION['user'])): ?>
-    <span>👤 Zalogowany jako: 
-        <a href="profil.php">
-            <strong><?= htmlspecialchars($_SESSION['user']['Login']) ?></strong>
-        </a>
-    </span> |
-    <a href="logout.php">🚪 Wyloguj</a>
-<?php else: ?>
-    <a href="login.php">🔐 Zaloguj</a>
-<?php endif; ?>
-            <a href="koszyk.php">🛒 Koszyk (<?= array_sum($_SESSION['koszyk'] ?? []) ?>)</a>
-        </nav>
-    </header>
+<?php include 'header.php'; ?>
+
 
     <main>
         <h1>Nasze produkty</h1>
@@ -61,6 +49,10 @@ $result = $conn->query($sql);
                     <form method="post">
                         <input type="hidden" name="produkt_id" value="<?= $row['Produkt_ID'] ?>">
                         <button type="submit">Dodaj do koszyka</button>
+                    </form>
+                    <form action="produkt.php" method="get" style="margin-top: 10px;">
+                        <input type="hidden" name="id" value="<?= $row['Produkt_ID'] ?>">
+                        <button type="submit">Zobacz produkt</button>
                     </form>
                 </div>
             <?php endwhile; ?>

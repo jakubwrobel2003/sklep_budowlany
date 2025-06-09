@@ -24,10 +24,7 @@ if (!empty($koszyk)) {
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">🏠 Sklep Budowlany</div>
-        <nav><a href="index.php">← Wróć do sklepu</a></nav>
-    </header>
+    <?php include 'header.php'; ?>
 
     <main>
         <h1>Twój koszyk</h1>
@@ -70,6 +67,12 @@ if (!empty($koszyk)) {
             exit;
         }
         ?>
+        <?php if (!empty($_SESSION['koszyk'])): ?>
+    <a href="zamow.php"><button>Zamów 🛒</button></a>
+<?php endif; ?>
+
     </main>
+    <?php include 'footer.php'; ?>
+
 </body>
 </html>
