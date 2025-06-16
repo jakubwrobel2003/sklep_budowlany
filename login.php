@@ -8,8 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login = $_POST['login'] ?? '';
     $haslo = $_POST['haslo'] ?? '';
 
-    $sql = "SELECT * FROM uzytkownicy WHERE Login = ?";
-    $stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare("SELECT * FROM uzytkownicy WHERE Login = ?");
     $stmt->bind_param("s", $login);
     $stmt->execute();
     $wynik = $stmt->get_result();
@@ -21,7 +20,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'Login' => $uzytkownik['Login'],
             'Rola' => $uzytkownik['Rola']
         ];
-        header("Location: index.php");
+
+        // Przekierowanie zależne od roli
+        switch ($_SESSION['user']['Rola']) {
+            case 'pracownik':
+            case 'admin':
+                header("Location: panel_pracownika.php");
+                break;
+            case 'klient':
+            default:
+                header("Location: index.php");
+                break;
+        }
         exit;
     } else {
         $blad = "Nieprawidłowy login lub hasło.";
@@ -34,21 +44,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Logowanie</title>
-        <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-   <header> <h1>🔐 Logowanie</h1></header>
-   <main>
-    <?php if ($blad): ?>
-        <p style="color:red"><?= htmlspecialchars($blad) ?></p>
-    <?php endif; ?>
-    <form method="post">
-        <label>Login: <input type="text" name="login" required></label><br>
-        <label>Hasło: <input type="password" name="haslo" required></label><br>
-        <button type="submit">Zaloguj</button>
-    </form>
-    <p><a href="rejestracja.php">Nie masz konta? Zarejestruj się</a></p>
-    <?php include 'footer.php'; ?>
+    <header><h1>🔐 Logowanie</h1></header>
+    <main>
+        <?php if ($blad): ?>
+            <p style="color:red"><?= htmlspecialchars($blad) ?></p>
+        <?php endif; ?>
+        <form method="post">
+            <label>Login: <input type="text" name="login" required></label><br>
+            <label>Hasło: <input type="password" name="haslo" required></label><br>
+            <button type="submit">Zaloguj</button>
+        </form>
+        <p><a href="rejestracja.php">Nie masz konta? Zarejestruj się</a></p>
+        <?php include 'footer.php'; ?>
     </main>
 </body>
 </html>

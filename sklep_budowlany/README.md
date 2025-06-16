@@ -1,1 +1,0 @@
-# sklep_budowlany

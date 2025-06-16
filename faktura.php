@@ -10,10 +10,12 @@ if (!isset($_GET['id'])) {
 $faktura_id = intval($_GET['id']);
 
 // Pobierz dane faktury + adres
-$sql = "SELECT hz.*, a.Ulica, a.Nr_budynku, a.Miejscowosc, a.Kod_pocztowy 
-        FROM historia_zakupow hz 
-        LEFT JOIN adresy a ON hz.Adres_ID = a.Adres_ID 
+$sql = "SELECT hz.*, a.Ulica, a.Nr_budynku, a.Miejscowosc, a.Kod_pocztowy, u.NIP
+        FROM historia_zakupow hz
+        LEFT JOIN adresy a ON hz.Adres_ID = a.Adres_ID
+        LEFT JOIN uzytkownicy u ON hz.Uzytkownik_ID = u.Uzytkownik_ID
         WHERE hz.Faktura_ID = ?";
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $faktura_id);
 $stmt->execute();
@@ -63,6 +65,10 @@ $produkty->data_seek(0); // Reset wskaźnika do początku
     <?= htmlspecialchars($faktura['Ulica'] ?? '') ?> <?= htmlspecialchars($faktura['Nr_budynku'] ?? '') ?><br>
     <?= htmlspecialchars($faktura['Kod_pocztowy'] ?? '') ?> <?= htmlspecialchars($faktura['Miejscowosc'] ?? '') ?>
 </p>
+<?php if (!empty($faktura['NIP'])): ?>
+    <p><strong>NIP:</strong> <?= htmlspecialchars($faktura['NIP']) ?></p>
+<?php endif; ?>
+
 
 <h3>📦 Produkty</h3>
 <?php if ($produkty->num_rows > 0): ?>
