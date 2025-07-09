@@ -85,7 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="nr_budynku" required>
     </label><br>
     <label>Kod pocztowy:
-        <input type="text" name="kod_pocztowy" required>
+    <input type="text" name="kod_pocztowy" required 
+           pattern="\d{2}-\d{3}" 
+           title="Kod pocztowy w formacie 00-000"
+           placeholder="np. 34-120">
     </label><br>
     <label>Miejscowość:
         <input type="text" name="miejscowosc" required>

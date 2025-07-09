@@ -79,50 +79,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="error"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <form method="post" action="rejestracja.php">
-            <label>Imię:
-                <input type="text" name="imie" required>
-            </label>
+      <form method="post" action="rejestracja.php" onsubmit="return walidujFormularz();">
+    <label>Imię:
+        <input type="text" name="imie" required>
+    </label>
 
-            <label>Nazwisko:
-                <input type="text" name="nazwisko" required>
-            </label>
+    <label>Nazwisko:
+        <input type="text" name="nazwisko" required>
+    </label>
 
-            <label>Login:
-                <input type="text" name="login" required>
-            </label>
+    <label>Login:
+        <input type="text" name="login" required>
+    </label>
 
-            <label>Hasło:
-                <input type="password" name="haslo" required>
-            </label>
+    <label>Hasło:
+        <input type="password" name="haslo" id="haslo" required
+               pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}"
+               title="Min. 8 znaków, 1 wielka i mała litera, 1 cyfra, 1 znak specjalny">
+    </label>
 
-            <label>Telefon:
-                <input type="text" name="telefon" required>
-            </label>
+    <label>Telefon:
+    <input type="tel" name="telefon" id="telefon" required 
+           pattern="\d{9}" title="Wpisz 9-cyfrowy numer telefonu, np. 501234567">
+    </label>
 
-            <label>Email:
-                <input type="email" name="email" required>
-            </label>
+    <label>Email:
+        <input type="email" name="email" required>
+    </label>
 
-            <label>Typ klienta:
-                <select name="typ_klienta" id="typ_klienta" required>
-                    <option value="osoba">Osoba indywidualna</option>
-                    <option value="firma">Firma</option>
-                </select>
-            </label>
+    <label>Typ klienta:
+        <select name="typ_klienta" id="typ_klienta" required onchange="pokazPolaFirmy()">
+            <option value="osoba">Osoba indywidualna</option>
+            <option value="firma">Firma</option>
+        </select>
+    </label>
 
-            <div id="firma_fields" class="firma-fields">
-                <label>Nazwa firmy:
-                    <input type="text" name="nazwa_firmy" id="nazwa_firmy">
-                </label>
+    <div id="firma_fields" class="firma-fields" style="display: none;">
+        <label>Nazwa firmy:
+            <input type="text" name="nazwa_firmy" id="nazwa_firmy">
+        </label>
 
-                <label>NIP:
-                    <input type="text" name="nip" id="nip">
-                </label>
-            </div>
+        <label>NIP:
+            <input type="text" name="nip" id="nip" pattern="\d{10}" 
+                   title="NIP musi zawierać dokładnie 10 cyfr">
+        </label>
+    </div>
 
-            <button type="submit">Zarejestruj się</button>
-        </form>
+    <button type="submit">Zarejestruj się</button>
+</form>
     </div>
 </main>
 
