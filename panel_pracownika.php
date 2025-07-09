@@ -169,7 +169,11 @@ $zamowienia = $conn->query("
         </form>
       <?php endwhile; ?>
     </div>
-
+     <div class="card">
+  <h2>📊 Raporty</h2>
+  <a href="raport_produkty.php" target="_blank" class="back-button">🧾 Lista produktów (PDF/druk)</a>
+  <a href="raport_zamowienia.php" target="_blank" class="back-button">📄 Lista zamówień (PDF/druk)</a>
+</div>           
 </main>
 
 <?php include 'footer.php'; ?>

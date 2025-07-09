@@ -18,9 +18,14 @@ if (session_status() === PHP_SESSION_NONE) {
                 <a href="profil.php"><strong><?= htmlspecialchars($_SESSION['user']['Login']) ?></strong></a>
             </div>
             <a href="logout.php">🚪 Wyloguj</a>
+            
+            <?php if ($_SESSION['user']['Rola'] === 'pracownik' || $_SESSION['user']['Rola'] === 'admin'): ?>
+                <a href="panel_pracownika.php">📋 Panel Pracownika</a>
+            <?php endif; ?>
         <?php else: ?>
             <a href="login.php">🔐 Zaloguj</a>
         <?php endif; ?>
+        
         <a href="koszyk.php">🛒 Koszyk (<?= array_sum($_SESSION['koszyk'] ?? []) ?>)</a>
     </div>
 </header>

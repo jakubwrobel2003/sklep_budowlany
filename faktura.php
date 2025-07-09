@@ -2,39 +2,54 @@
 session_start();
 require 'db.php';
 
-if (!isset($_GET['id'])) {
-    echo "Brak ID faktury.";
+// Sprawdzenie czy zalogowany
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
     exit;
+}
+
+// Sprawdzenie czy przekazano ID faktury
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    die("Brak poprawnego ID faktury.");
 }
 
 $faktura_id = intval($_GET['id']);
 
-// Pobierz dane faktury + adres
-$sql = "SELECT hz.*, a.Ulica, a.Nr_budynku, a.Miejscowosc, a.Kod_pocztowy, u.NIP
-        FROM historia_zakupow hz
-        LEFT JOIN adresy a ON hz.Adres_ID = a.Adres_ID
-        LEFT JOIN uzytkownicy u ON hz.Uzytkownik_ID = u.Uzytkownik_ID
-        WHERE hz.Faktura_ID = ?";
-
+// Pobranie danych faktury + użytkownika + firmy
+$sql = "
+    SELECT hz.*, u.Imie, u.Nazwisko, u.Email, u.Telefon, u.Typ_Klienta,
+           f.Nazwa_Firmy, f.NIP
+    FROM historia_zakupow hz
+    JOIN uzytkownicy u ON hz.Uzytkownik_ID = u.Uzytkownik_ID
+    LEFT JOIN firmy f ON u.Firmy_ID = f.Firmy_ID
+    WHERE hz.Faktura_ID = ?
+";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $faktura_id);
 $stmt->execute();
-$faktura = $stmt->get_result()->fetch_assoc();
+$dane = $stmt->get_result()->fetch_assoc();
 
-if (!$faktura) {
-    echo "Nie znaleziono faktury.";
-    exit;
+if (!$dane) {
+    die("Nie znaleziono faktury.");
 }
 
-// Pobierz produkty z faktury
-$sql2 = "SELECT zf.Ilosc, p.Nazwa, p.Cena
-         FROM zawartosc_faktury zf
-         JOIN produkty p ON zf.Produkt_ID = p.Produkt_ID
-         WHERE zf.Faktura_ID = ?";
-$stmt2 = $conn->prepare($sql2);
-$stmt2->bind_param("i", $faktura_id);
-$stmt2->execute();
-$produkty = $stmt2->get_result();
+// Pobranie produktów z faktury
+$sql_produkty = "
+    SELECT p.Nazwa, p.Cena, z.Ilosc
+    FROM zawartosc_faktury z
+    JOIN produkty p ON z.Produkt_ID = p.Produkt_ID
+    WHERE z.Faktura_ID = ?
+";
+$stmt_prod = $conn->prepare($sql_produkty);
+$stmt_prod->bind_param("i", $faktura_id);
+$stmt_prod->execute();
+$produkty = $stmt_prod->get_result();
+
+// Oblicz sumę
+$suma = 0;
+foreach ($produkty as $prod) {
+    $suma += $prod['Cena'] * $prod['Ilosc'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -42,55 +57,47 @@ $produkty = $stmt2->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Faktura #<?= $faktura_id ?></title>
-        <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<main class="container invoice-box">
+    <h2>🧾 Faktura #<?= $faktura_id ?></h2>
 
-<h2>🧾 Faktura #<?= $faktura_id ?></h2>
-<p><strong>Data:</strong> <?= htmlspecialchars($faktura['Data']) ?></p>
-<p><strong>Status:</strong> <?= htmlspecialchars($faktura['Status']) ?></p>
+    <p><strong>Data wystawienia:</strong> <?= $dane['Data'] ?></p>
 
-<?php
-$kwota = 0;
-foreach ($produkty as $p) {
-    $kwota += $p['Ilosc'] * $p['Cena'];
-}
-$produkty->data_seek(0); // Reset wskaźnika do początku
-?>
+    <h3>👤 Dane klienta</h3>
+    <p><strong>Imię i nazwisko:</strong> <?= htmlspecialchars($dane['Imie']) ?> <?= htmlspecialchars($dane['Nazwisko']) ?></p>
+    <p><strong>Email:</strong> <?= htmlspecialchars($dane['Email']) ?></p>
+    <p><strong>Telefon:</strong> <?= htmlspecialchars($dane['Telefon']) ?></p>
+    <p><strong>Typ klienta:</strong> <?= htmlspecialchars($dane['Typ_Klienta']) ?></p>
 
-<p><strong>Kwota:</strong> <?= number_format($kwota, 2) ?> zł</p>
+    <?php if ($dane['Typ_Klienta'] === 'firma'): ?>
+        <p><strong>Nazwa firmy:</strong> <?= htmlspecialchars($dane['Nazwa_Firmy']) ?></p>
+        <p><strong>NIP:</strong> <?= htmlspecialchars($dane['NIP']) ?></p>
+    <?php endif; ?>
 
-<h3>📍 Adres dostawy</h3>
-<p>
-    <?= htmlspecialchars($faktura['Ulica'] ?? '') ?> <?= htmlspecialchars($faktura['Nr_budynku'] ?? '') ?><br>
-    <?= htmlspecialchars($faktura['Kod_pocztowy'] ?? '') ?> <?= htmlspecialchars($faktura['Miejscowosc'] ?? '') ?>
-</p>
-<?php if (!empty($faktura['NIP'])): ?>
-    <p><strong>NIP:</strong> <?= htmlspecialchars($faktura['NIP']) ?></p>
-<?php endif; ?>
-
-
-<h3>📦 Produkty</h3>
-<?php if ($produkty->num_rows > 0): ?>
+    <h3>📦 Zamówione produkty</h3>
     <table>
-        <tr>
-            <th>Produkt</th>
-            <th>Ilość</th>
-            <th>Cena jednostkowa</th>
-            <th>Wartość</th>
-        </tr>
-        <?php while ($p = $produkty->fetch_assoc()): ?>
+        <tr><th>Nazwa</th><th>Ilość</th><th>Cena jedn.</th><th>Wartość</th></tr>
+        <?php
+        mysqli_data_seek($produkty, 0); // reset wyniku
+        while ($p = $produkty->fetch_assoc()):
+            $wartosc = $p['Cena'] * $p['Ilosc'];
+        ?>
             <tr>
                 <td><?= htmlspecialchars($p['Nazwa']) ?></td>
                 <td><?= $p['Ilosc'] ?></td>
                 <td><?= number_format($p['Cena'], 2) ?> zł</td>
-                <td><?= number_format($p['Ilosc'] * $p['Cena'], 2) ?> zł</td>
+                <td><?= number_format($wartosc, 2) ?> zł</td>
             </tr>
         <?php endwhile; ?>
+        <tr>
+            <td colspan="3" style="text-align:right;"><strong>Razem do zapłaty:</strong></td>
+            <td><strong><?= number_format($suma, 2) ?> zł</strong></td>
+        </tr>
     </table>
-<?php else: ?>
-    <p>Brak produktów w tej fakturze.</p>
-<?php endif; ?>
 
+    <a class="back-button" href="javascript:window.print()">🖨️ Drukuj fakturę</a>
+</main>
 </body>
 </html>
