@@ -13,9 +13,22 @@ if (!isset($_SESSION['user']) || !in_array($_SESSION['user']['Rola'], ['pracowni
 // 2a. Dodawanie produktu
 if (isset($_POST['akcja']) && $_POST['akcja'] === 'dodaj_produkt') {
     $nazwa  = $_POST['nazwa'];
-    $opis   = $_POST['opis'];
+    $opis   = trim($_POST['opis']);
     $cena   = floatval($_POST['cena']);
     $ilosc  = intval($_POST['ilosc']);
+
+    // Walidacja ceny i opisu
+    if ($cena <= 0) {
+        $_SESSION['error'] = "Cena musi być większa od zera.";
+        header('Location: panel_pracownika.php');
+        exit;
+    }
+    if ($opis === '') {
+        $_SESSION['error'] = "Opis nie może być pusty.";
+        header('Location: panel_pracownika.php');
+        exit;
+    }
+
     $stmt = $conn->prepare("INSERT INTO produkty (Nazwa, Opis, Cena, Ilosc) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("ssdi", $nazwa, $opis, $cena, $ilosc);
     $stmt->execute();
@@ -27,9 +40,22 @@ if (isset($_POST['akcja']) && $_POST['akcja'] === 'dodaj_produkt') {
 if (isset($_POST['akcja']) && $_POST['akcja'] === 'edytuj_produkt') {
     $id     = intval($_POST['produkt_id']);
     $nazwa  = $_POST['nazwa'];
-    $opis   = $_POST['opis'];
+    $opis   = trim($_POST['opis']);
     $cena   = floatval($_POST['cena']);
     $ilosc  = intval($_POST['ilosc']);
+
+    // Walidacja ceny i opisu
+    if ($cena <= 0) {
+        $_SESSION['error'] = "Cena musi być większa od zera.";
+        header('Location: panel_pracownika.php?edit=' . $id);
+        exit;
+    }
+    if ($opis === '') {
+        $_SESSION['error'] = "Opis nie może być pusty.";
+        header('Location: panel_pracownika.php?edit=' . $id);
+        exit;
+    }
+
     $stmt = $conn->prepare("UPDATE produkty SET Nazwa=?, Opis=?, Cena=?, Ilosc=? WHERE Produkt_ID=?");
     $stmt->bind_param("ssdii", $nazwa, $opis, $cena, $ilosc, $id);
     $stmt->execute();
@@ -81,6 +107,7 @@ $zamowienia = $conn->query("
       .card { padding:1em; margin:1em 0; border:1px solid #ccc; border-radius:6px; }
       .flex { display:flex; gap:1em; align-items:flex-start; }
       .flex > * { flex:1; }
+      .error { color: red; margin-bottom: 1em; }
     </style>
 </head>
 <body>
@@ -89,15 +116,22 @@ $zamowienia = $conn->query("
 <main class="container">
     <h1>🛠 Panel Pracownika / Admina</h1>
 
+    <?php
+    if (isset($_SESSION['error'])) {
+        echo '<p class="error">'.htmlspecialchars($_SESSION['error']).'</p>';
+        unset($_SESSION['error']);
+    }
+    ?>
+
     <!-- Sekcja 1: Dodaj produkt -->
     <div class="card">
       <h2>➕ Dodaj nowy produkt</h2>
       <form method="post" class="flex">
         <input type="hidden" name="akcja" value="dodaj_produkt">
         <input type="text"    name="nazwa"  placeholder="Nazwa"   required>
-        <input type="number"  name="cena"   placeholder="Cena"    step="0.01" required>
+        <input type="number"  name="cena"   placeholder="Cena"    step="0.01" min="0.01" required>
         <input type="number"  name="ilosc"  placeholder="Ilość"   min="1" required>
-        <input type="text"    name="opis"   placeholder="Opis">
+        <input type="text"    name="opis"   placeholder="Opis" required>
         <button type="submit">Dodaj</button>
       </form>
     </div>
@@ -132,9 +166,9 @@ $zamowienia = $conn->query("
           <input type="hidden" name="akcja" value="edytuj_produkt">
           <input type="hidden" name="produkt_id" value="<?= $id ?>">
           <input type="text"    name="nazwa"  value="<?= htmlspecialchars($prod['Nazwa']) ?>" required>
-          <input type="number"  name="cena"   value="<?= $prod['Cena'] ?>" step="0.01" required>
+          <input type="number"  name="cena"   value="<?= $prod['Cena'] ?>" step="0.01" min="0.01" required>
           <input type="number"  name="ilosc"  value="<?= $prod['Ilosc'] ?>" min="1" required>
-          <input type="text"    name="opis"   value="<?= htmlspecialchars($prod['Opis']) ?>">
+          <input type="text"    name="opis"   value="<?= htmlspecialchars($prod['Opis']) ?>" required>
           <button type="submit">Zapisz zmiany</button>
         </form>
       <?php endif; ?>
@@ -169,11 +203,11 @@ $zamowienia = $conn->query("
         </form>
       <?php endwhile; ?>
     </div>
-     <div class="card">
-  <h2>📊 Raporty</h2>
-  <a href="raport_produkty.php" target="_blank" class="back-button">🧾 Lista produktów (PDF/druk)</a>
-  <a href="raport_zamowienia.php" target="_blank" class="back-button">📄 Lista zamówień (PDF/druk)</a>
-</div>           
+    <div class="card">
+      <h2>📊 Raporty</h2>
+      <a href="raport_produkty.php" target="_blank" class="back-button">🧾 Lista produktów (PDF/druk)</a>
+      <a href="raport_zamowienia.php" target="_blank" class="back-button">📄 Lista zamówień (PDF/druk)</a>
+    </div>           
 </main>
 
 <?php include 'footer.php'; ?>

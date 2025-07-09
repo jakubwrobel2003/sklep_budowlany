@@ -17,9 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $kod = $_POST['kod_pocztowy'] ?? '';
     $miasto = $_POST['miejscowosc'] ?? '';
 
+    // Walidacja pól
     if (!$ulica || !$nr || !$kod || !$miasto) {
         $error = "Wszystkie pola adresowe są wymagane.";
-    } elseif (empty($_SESSION['koszyk'])) {
+    }
+    // ✅ Walidacja numeru budynku
+    elseif (!preg_match('/^[0-9]+[a-zA-Z]?$/', $nr)) {
+        $error = "Numer budynku musi zaczynać się od cyfry i może zawierać jedną literę.";
+    }
+    elseif (empty($_SESSION['koszyk'])) {
         $error = "Koszyk jest pusty.";
     } else {
         // Wstawianie adresu
@@ -81,18 +87,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <label>Ulica:
         <input type="text" name="ulica" required>
     </label><br>
+
     <label>Nr budynku:
-        <input type="text" name="nr_budynku" required>
+        <input type="text" name="nr_budynku" required
+               pattern="^[0-9]+[a-zA-Z]?$"
+               title="Numer budynku musi zaczynać się od cyfry i może zawierać jedną literę"
+               placeholder="np. 12 lub 12A">
     </label><br>
+
     <label>Kod pocztowy:
-    <input type="text" name="kod_pocztowy" required 
-           pattern="\d{2}-\d{3}" 
-           title="Kod pocztowy w formacie 00-000"
-           placeholder="np. 34-120">
+        <input type="text" name="kod_pocztowy" required 
+               pattern="\d{2}-\d{3}" 
+               title="Kod pocztowy w formacie 00-000"
+               placeholder="np. 34-120">
     </label><br>
+
     <label>Miejscowość:
         <input type="text" name="miejscowosc" required>
     </label><br>
+
     <button type="submit">Zamów 🛒</button>
 </form>
 
@@ -100,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php if ($redirectUrl): ?>
 <script>
-    // Przekieruj po chwili (np. 1s) po udanym zapisie
     setTimeout(() => {
         window.location.href = <?= json_encode($redirectUrl) ?>;
     }, 1000);
